@@ -232,7 +232,7 @@ export const adiApi = {
     let result: ADIAnalyzeResponse = {status: 'running'};
     const maxAttempts = 30;
     for (let i = 0; i < maxAttempts; i++) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 2000));
 
       const pollRes = await axios.get<ADIAnalyzeResponse>(operationLocation, {
         headers: {'Ocp-Apim-Subscription-Key': appConfig.adiApiKey},

@@ -22,7 +22,9 @@ import {
   FilterState,
 } from '../types';
 
-type HistoryItem = (SustainabilityJournalEntry & {source: 'bc'}) | (DraftEntry & {source: 'draft'});
+type BCHistoryItem = SustainabilityJournalEntry & {source: 'bc'};
+type DraftHistoryItem = DraftEntry & {source: 'draft'};
+type HistoryItem = BCHistoryItem | DraftHistoryItem;
 
 export default function HistoryScreen({navigation}: any) {
   const [items, setItems] = useState<HistoryItem[]>([]);
@@ -45,8 +47,8 @@ export default function HistoryScreen({navigation}: any) {
       ];
 
       allItems.sort((a, b) => {
-        const dateA = 'postingDate' in a ? a.postingDate : a.createdAt;
-        const dateB = 'postingDate' in b ? b.postingDate : b.createdAt;
+        const dateA = a.postingDate || (a.source === 'draft' ? a.createdAt : '');
+        const dateB = b.postingDate || (b.source === 'draft' ? b.createdAt : '');
         return new Date(dateB).getTime() - new Date(dateA).getTime();
       });
 
@@ -65,8 +67,8 @@ export default function HistoryScreen({navigation}: any) {
   const filteredItems = items.filter(item => {
     const query = filters.searchQuery.toLowerCase();
     if (!query) {return true;}
-    const desc = ('description' in item ? item.description : '').toLowerCase();
-    const account = ('accountName' in item ? item.accountName : ('accountNo' in item ? item.accountNo : '')).toLowerCase();
+    const desc = item.description.toLowerCase();
+    const account = (item.accountName || item.accountNo || '').toLowerCase();
     return desc.includes(query) || account.includes(query);
   });
 
@@ -109,7 +111,7 @@ export default function HistoryScreen({navigation}: any) {
         <Text style={styles.date}>{item.postingDate}</Text>
       </View>
       <Text style={styles.account}>
-        {'accountName' in item ? item.accountName : item.accountNo}
+        {item.accountName || item.accountNo}
       </Text>
       <Text style={styles.desc} numberOfLines={1}>{item.description}</Text>
       <View style={styles.cardFooter}>
@@ -162,7 +164,7 @@ export default function HistoryScreen({navigation}: any) {
                 </View>
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>Account</Text>
-                  <Text style={styles.detailValue}>{'accountName' in selectedItem ? selectedItem.accountName : selectedItem.accountNo}</Text>
+                  <Text style={styles.detailValue}>{selectedItem.accountName || selectedItem.accountNo}</Text>
                 </View>
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>Description</Text>
